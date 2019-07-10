@@ -6,7 +6,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from db import Database
-from routes import role_bindings, roles, users
+from routes import role_bindings, roles, users, service_accounts
 from utils import get_db
 
 MONGO_DB__HOST_URI = os.environ.get("MONGO_DB__HOST_URI", "localhost")
@@ -36,6 +36,8 @@ app.include_router(role_bindings.routes,
                    prefix="/api/v1", tags=["CRUD on RoleBindings"])
 app.include_router(users.routes,
                    prefix="/api/v1", tags=["CRUD on Users"])
+app.include_router(service_accounts.routes,
+                   prefix="/api/v1", tags=["CRUD on Service Accounts"])
 
 if __name__ == "__main__":
     import uvicorn
