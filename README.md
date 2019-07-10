@@ -1,3 +1,3 @@
-# gala-authz-api
+# gala-iam-api
 
-Web API for the Authorization for the Gala Event Management System
+Web API's for the Identity and Access Management for the Gala Event Management System
