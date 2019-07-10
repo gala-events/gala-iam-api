@@ -10,8 +10,7 @@ from starlette.status import (HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
                               HTTP_404_NOT_FOUND)
 
 from db import CRUD, Database
-from models import RoleBinding, RoleBindingCreate
-from models.role_binding import RoleBindingPartial
+from models import RoleBinding, RoleBindingCreate, RoleBindingPartial
 from utils import get_db, json_merge_patch
 from utils.exceptions import RecordNotFoundException
 
