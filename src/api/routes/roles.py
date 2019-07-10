@@ -64,8 +64,8 @@ def update_role(role_id: str, role: RoleCreate, response: Response, db=Depends(g
         return JSONResponse(dict(error="Failed to update %s record" % role_id))
 
 
-@routes.patch("/roles/{role_id}", response_model=RolePartial)
-def partial_update_role(role_id: str, role: BaseModel, db=Depends(get_db)):
+@routes.patch("/roles/{role_id}", response_model=Role)
+def partial_update_role(role_id: str, role: RolePartial, db=Depends(get_db)):
     existing_role = CRUD.find_by_uuid(db, "roles", role_id)
     updated_role = json_merge_patch(
         existing_role, role.dict(skip_defaults=True))
