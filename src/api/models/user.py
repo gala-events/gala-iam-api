@@ -6,7 +6,6 @@ from datetime import datetime
 
 class UserCreate(BaseModel):
     name: str
-    user_name: str
     email: str
 
 
@@ -16,5 +15,4 @@ class User(UserCreate):
 
 class UserPartial(BaseModel):
     name: str = None
-    user_name: str = None
     email: str = None
