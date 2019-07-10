@@ -6,6 +6,9 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from models.role import RoleType
+from models.service_account import ServiceAccount
+from models.user import User
+from models.user_group import UserGroup
 
 
 class RoleBindingType(str, Enum):
@@ -23,8 +26,14 @@ class RoleBindingRoleRef(BaseModel):
     name: str
 
 
+class RoleBindingSubjectKind(str, Enum):
+    USER = User.__name__
+    SERVICE_ACCOUNT = ServiceAccount.__name__
+    USER_GROUP = UserGroup.__name__
+
+
 class RoleBindingSubject(BaseModel):
-    kind: Union[str]
+    kind: RoleBindingSubjectKind
     name: str
 
 

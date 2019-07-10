@@ -2,7 +2,7 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_NAME: avik32223/gala-authz-api
+      IMAGE_NAME: avik32223/gala-iam-api
     docker:
       - image: circleci/buildpack-deps:stretch
 jobs:

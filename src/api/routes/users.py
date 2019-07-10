@@ -32,7 +32,7 @@ def get_users(db=Depends(get_db),
               search: str = None,
               sort: List[str] = Query([], alias="sort_by")):
     filter_params = dict()
-    search_fields = ["uuid", "name"]
+    search_fields = ["uuid", "name", "email"]
     if search:
         map(lambda search_field: filter_params.update(
             search_field=re.compile(search)), search_fields)
