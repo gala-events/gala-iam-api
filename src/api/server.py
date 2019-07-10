@@ -1,10 +1,12 @@
 import os
-from fastapi import FastAPI, Depends
+
+from fastapi import Depends, FastAPI
+from pymongo import MongoClient
 from starlette.requests import Request
 from starlette.responses import Response
-from routes import roles
+
 from db import Database
-from pymongo import MongoClient
+from routes import role_bindings, roles
 from utils import get_db
 
 MONGO_DB__HOST_URI = os.environ.get("MONGO_DB__HOST_URI", "localhost")
@@ -30,6 +32,8 @@ async def db_session_middleware(request: Request, call_next):
 
 app.include_router(roles.routes,
                    prefix="/api/v1", tags=["CRUD on Roles"])
+app.include_router(role_bindings.routes,
+                   prefix="/api/v1", tags=["CRUD on RoleBindings"])
 
 if __name__ == "__main__":
     import uvicorn
