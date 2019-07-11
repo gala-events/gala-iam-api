@@ -17,16 +17,16 @@ from utils.exceptions import RecordNotFoundException
 routes = APIRouter()
 
 
-@routes.post("/roles", response_model=Role)
-def create_role(role: RoleCreate, db=Depends(get_db)):
-    role_id = CRUD.create(db, "roles", role.dict())
-    role_record = CRUD.find_by_uuid(db, "roles", str(role_id))
+def create_role(role: RoleCreate, db: Database):
+    role_data = role.dict()
+    role_id = CRUD.create(db, "roles", role_data)
+    role_record = CRUD.find_by_uuid(
+        db, "roles", str(role_id))
     role = Role(**role_record)
     return role
 
 
-@routes.get("/roles", response_model=List[Role])
-def get_roles(db=Depends(get_db),
+def get_roles(db,
               skip: int = 0,
               limit: int = 25,
               search: str = None,
@@ -44,17 +44,59 @@ def get_roles(db=Depends(get_db),
     return [Role(**d) for d in data]
 
 
-@routes.get("/roles/{role_id}", response_model=Role)
-def get_role(role_id: str, db=Depends(get_db)):
+def get_role(role_id: str, db):
     data = CRUD.find_by_uuid(db, "roles", role_id)
     return Role(**data)
 
 
+def update_role(role_id: str, role: RoleCreate, db):
+    data = CRUD.update(db, "roles",
+                       role_id, role.dict())
+    return Role(**data)
+
+
+def partial_update_role(role_id: str, role: RolePartial, db):
+    existing_role = CRUD.find_by_uuid(
+        db, "roles", role_id)
+    updated_role = json_merge_patch(
+        existing_role, role.dict(skip_defaults=True))
+    data = CRUD.update(db, "roles", role_id,
+                       updated_role)
+    return Role(**data)
+
+
+def delete_role(role_id: str, db):
+    resp = CRUD.delete(db, "roles", role_id)
+    return resp
+
+
+@routes.post("/roles", response_model=Role)
+def create_role_api(role: RoleCreate, db=Depends(get_db)):
+    role = create_role(role, db)
+    return role
+
+
+@routes.get("/roles", response_model=List[Role])
+def get_roles_api(db=Depends(get_db),
+                  skip: int = 0,
+                  limit: int = 25,
+                  search: str = None,
+                  sort: List[str] = Query([], alias="sort_by")):
+    roles = get_roles(
+        db=db, skip=skip, limit=limit, search=search, sort=sort)
+    return roles
+
+
+@routes.get("/roles/{role_id}", response_model=Role)
+def get_role_api(role_id: str, db=Depends(get_db)):
+    role = get_role(role_id, db)
+    return role
+
+
 @routes.put("/roles/{role_id}", response_model=Role)
-def update_role(role_id: str, role: RoleCreate, response: Response, db=Depends(get_db)):
+def update_role_api(role_id: str, role: RoleCreate, response: Response, db=Depends(get_db)):
     try:
-        data = CRUD.update(db, "roles", role_id, role.dict())
-        return Role(**data)
+        update_role(role_id, role, db)
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
@@ -64,23 +106,21 @@ def update_role(role_id: str, role: RoleCreate, response: Response, db=Depends(g
 
 
 @routes.patch("/roles/{role_id}", response_model=Role)
-def partial_update_role(role_id: str, role: RolePartial, db=Depends(get_db)):
-    existing_role = CRUD.find_by_uuid(db, "roles", role_id)
-    updated_role = json_merge_patch(
-        existing_role, role.dict(skip_defaults=True))
-    data = CRUD.update(db, "roles", role_id, updated_role)
-    return Role(**data)
+def partial_update_role_api(role_id: str, role: RolePartial, db=Depends(get_db)):
+    updated_role = partial_update_role(
+        role_id, role, db)
+    return updated_role
 
 
 @routes.delete("/roles/{role_id}")
-def delete_role(role_id: str, response: Response, db=Depends(get_db)):
+def delete_role_api(role_id: str, response: Response, db=Depends(get_db)):
     try:
-        CRUD.delete(db, "roles", role_id)
+        delete_role(role_id, db)
         response.status_code = HTTP_204_NO_CONTENT
-        return JSONResponse(dict(message="Event %s deleted successfully." % role_id))
+        return JSONResponse(dict(message="Role %s deleted successfully." % role_id))
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
     except:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to delete Event %s." % role_id))
+        return JSONResponse(dict(error="Failed to delete Role %s." % role_id))
