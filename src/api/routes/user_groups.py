@@ -17,17 +17,16 @@ from utils.exceptions import RecordNotFoundException
 routes = APIRouter()
 
 
-@routes.post("/user_groups", response_model=UserGroup)
-def create_user_group(user_group: UserGroupCreate, db=Depends(get_db)):
-    user_group_id = CRUD.create(db, "user_groups", user_group.dict())
+def create_user_group(user_group: UserGroupCreate, db: Database):
+    user_group_data = user_group.dict()
+    user_group_id = CRUD.create(db, "user_groups", user_group_data)
     user_group_record = CRUD.find_by_uuid(
         db, "user_groups", str(user_group_id))
     user_group = UserGroup(**user_group_record)
     return user_group
 
 
-@routes.get("/user_groups", response_model=List[UserGroup])
-def get_user_groups(db=Depends(get_db),
+def get_user_groups(db,
                     skip: int = 0,
                     limit: int = 25,
                     search: str = None,
@@ -45,17 +44,59 @@ def get_user_groups(db=Depends(get_db),
     return [UserGroup(**d) for d in data]
 
 
-@routes.get("/user_groups/{user_group_id}", response_model=UserGroup)
-def get_user_group(user_group_id: str, db=Depends(get_db)):
+def get_user_group(user_group_id: str, db):
     data = CRUD.find_by_uuid(db, "user_groups", user_group_id)
     return UserGroup(**data)
 
 
+def update_user_group(user_group_id: str, user_group: UserGroupCreate, db):
+    data = CRUD.update(db, "user_groups",
+                       user_group_id, user_group.dict())
+    return UserGroup(**data)
+
+
+def partial_update_user_group(user_group_id: str, user_group: UserGroupPartial, db):
+    existing_user_group = CRUD.find_by_uuid(
+        db, "user_groups", user_group_id)
+    updated_user_group = json_merge_patch(
+        existing_user_group, user_group.dict(skip_defaults=True))
+    data = CRUD.update(db, "user_groups", user_group_id,
+                       updated_user_group)
+    return UserGroup(**data)
+
+
+def delete_user_group(user_group_id: str, db):
+    resp = CRUD.delete(db, "user_groups", user_group_id)
+    return resp
+
+
+@routes.post("/user_groups", response_model=UserGroup)
+def create_user_group_api(user_group: UserGroupCreate, db=Depends(get_db)):
+    user_group = create_user_group(user_group, db)
+    return user_group
+
+
+@routes.get("/user_groups", response_model=List[UserGroup])
+def get_user_groups_api(db=Depends(get_db),
+                        skip: int = 0,
+                        limit: int = 25,
+                        search: str = None,
+                        sort: List[str] = Query([], alias="sort_by")):
+    user_groups = get_user_groups(
+        db=db, skip=skip, limit=limit, search=search, sort=sort)
+    return user_groups
+
+
+@routes.get("/user_groups/{user_group_id}", response_model=UserGroup)
+def get_user_group_api(user_group_id: str, db=Depends(get_db)):
+    user_group = get_user_group(user_group_id, db)
+    return user_group
+
+
 @routes.put("/user_groups/{user_group_id}", response_model=UserGroup)
-def update_user_group(user_group_id: str, user_group: UserGroupCreate, response: Response, db=Depends(get_db)):
+def update_user_group_api(user_group_id: str, user_group: UserGroupCreate, response: Response, db=Depends(get_db)):
     try:
-        data = CRUD.update(db, "user_groups", user_group_id, user_group.dict())
-        return UserGroup(**data)
+        update_user_group(user_group_id, user_group, db)
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
@@ -65,23 +106,21 @@ def update_user_group(user_group_id: str, user_group: UserGroupCreate, response:
 
 
 @routes.patch("/user_groups/{user_group_id}", response_model=UserGroup)
-def partial_update_user_group(user_group_id: str, user_group: UserGroupPartial, db=Depends(get_db)):
-    existing_user_group = CRUD.find_by_uuid(db, "user_groups", user_group_id)
-    updated_user_group = json_merge_patch(
-        existing_user_group, user_group.dict(skip_defaults=True))
-    data = CRUD.update(db, "user_groups", user_group_id, updated_user_group)
-    return UserGroup(**data)
+def partial_update_user_group_api(user_group_id: str, user_group: UserGroupPartial, db=Depends(get_db)):
+    updated_user_group = partial_update_user_group(
+        user_group_id, user_group, db)
+    return updated_user_group
 
 
 @routes.delete("/user_groups/{user_group_id}")
-def delete_user_group(user_group_id: str, response: Response, db=Depends(get_db)):
+def delete_user_group_api(user_group_id: str, response: Response, db=Depends(get_db)):
     try:
-        CRUD.delete(db, "user_groups", user_group_id)
+        delete_user_group(user_group_id, db)
         response.status_code = HTTP_204_NO_CONTENT
-        return JSONResponse(dict(message="Event %s deleted successfully." % user_group_id))
+        return JSONResponse(dict(message="UserGroup %s deleted successfully." % user_group_id))
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
     except:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to delete Event %s." % user_group_id))
+        return JSONResponse(dict(error="Failed to delete UserGroup %s." % user_group_id))

@@ -17,18 +17,17 @@ from utils.exceptions import RecordNotFoundException
 routes = APIRouter()
 
 
-@routes.post("/service_accounts", response_model=ServiceAccount)
-def create_service_account(service_account: ServiceAccountCreate, db=Depends(get_db)):
+def create_service_account(service_account: ServiceAccountCreate, db: Database):
+    service_account_data = service_account.dict()
     service_account_id = CRUD.create(
-        db, "service_accounts", service_account.dict())
+        db, "service_accounts", service_account_data)
     service_account_record = CRUD.find_by_uuid(
         db, "service_accounts", str(service_account_id))
     service_account = ServiceAccount(**service_account_record)
     return service_account
 
 
-@routes.get("/service_accounts", response_model=List[ServiceAccount])
-def get_service_accounts(db=Depends(get_db),
+def get_service_accounts(db,
                          skip: int = 0,
                          limit: int = 25,
                          search: str = None,
@@ -46,18 +45,59 @@ def get_service_accounts(db=Depends(get_db),
     return [ServiceAccount(**d) for d in data]
 
 
-@routes.get("/service_accounts/{service_account_id}", response_model=ServiceAccount)
-def get_service_account(service_account_id: str, db=Depends(get_db)):
+def get_service_account(service_account_id: str, db):
     data = CRUD.find_by_uuid(db, "service_accounts", service_account_id)
     return ServiceAccount(**data)
 
 
+def update_service_account(service_account_id: str, service_account: ServiceAccountCreate, db):
+    data = CRUD.update(db, "service_accounts",
+                       service_account_id, service_account.dict())
+    return ServiceAccount(**data)
+
+
+def partial_update_service_account(service_account_id: str, service_account: ServiceAccountPartial, db):
+    existing_service_account = CRUD.find_by_uuid(
+        db, "service_accounts", service_account_id)
+    updated_service_account = json_merge_patch(
+        existing_service_account, service_account.dict(skip_defaults=True))
+    data = CRUD.update(db, "service_accounts", service_account_id,
+                       updated_service_account)
+    return ServiceAccount(**data)
+
+
+def delete_service_account(service_account_id: str, db):
+    resp = CRUD.delete(db, "service_accounts", service_account_id)
+    return resp
+
+
+@routes.post("/service_accounts", response_model=ServiceAccount)
+def create_service_account_api(service_account: ServiceAccountCreate, db=Depends(get_db)):
+    service_account = create_service_account(service_account, db)
+    return service_account
+
+
+@routes.get("/service_accounts", response_model=List[ServiceAccount])
+def get_service_accounts_api(db=Depends(get_db),
+                             skip: int = 0,
+                             limit: int = 25,
+                             search: str = None,
+                             sort: List[str] = Query([], alias="sort_by")):
+    service_accounts = get_service_accounts(
+        db=db, skip=skip, limit=limit, search=search, sort=sort)
+    return service_accounts
+
+
+@routes.get("/service_accounts/{service_account_id}", response_model=ServiceAccount)
+def get_service_account_api(service_account_id: str, db=Depends(get_db)):
+    service_account = get_service_account(service_account_id, db)
+    return service_account
+
+
 @routes.put("/service_accounts/{service_account_id}", response_model=ServiceAccount)
-def update_service_account(service_account_id: str, service_account: ServiceAccountCreate, response: Response, db=Depends(get_db)):
+def update_service_account_api(service_account_id: str, service_account: ServiceAccountCreate, response: Response, db=Depends(get_db)):
     try:
-        data = CRUD.update(db, "service_accounts",
-                           service_account_id, service_account.dict())
-        return ServiceAccount(**data)
+        update_service_account(service_account_id, service_account, db)
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
@@ -67,25 +107,21 @@ def update_service_account(service_account_id: str, service_account: ServiceAcco
 
 
 @routes.patch("/service_accounts/{service_account_id}", response_model=ServiceAccount)
-def partial_update_service_account(service_account_id: str, service_account: ServiceAccountPartial, db=Depends(get_db)):
-    existing_service_account = CRUD.find_by_uuid(
-        db, "service_accounts", service_account_id)
-    updated_service_account = json_merge_patch(
-        existing_service_account, service_account.dict(skip_defaults=True))
-    data = CRUD.update(db, "service_accounts",
-                       service_account_id, updated_service_account)
-    return ServiceAccount(**data)
+def partial_update_service_account_api(service_account_id: str, service_account: ServiceAccountPartial, db=Depends(get_db)):
+    updated_service_account = partial_update_service_account(
+        service_account_id, service_account, db)
+    return updated_service_account
 
 
 @routes.delete("/service_accounts/{service_account_id}")
-def delete_service_account(service_account_id: str, response: Response, db=Depends(get_db)):
+def delete_service_account_api(service_account_id: str, response: Response, db=Depends(get_db)):
     try:
-        CRUD.delete(db, "service_accounts", service_account_id)
+        delete_service_account(service_account_id, db)
         response.status_code = HTTP_204_NO_CONTENT
-        return JSONResponse(dict(message="Event %s deleted successfully." % service_account_id))
+        return JSONResponse(dict(message="ServiceAccount %s deleted successfully." % service_account_id))
     except RecordNotFoundException as exc:
         response.status_code = HTTP_404_NOT_FOUND
         return JSONResponse(dict(error=str(exc)))
     except:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to delete Event %s." % service_account_id))
+        return JSONResponse(dict(error="Failed to delete ServiceAccount %s." % service_account_id))

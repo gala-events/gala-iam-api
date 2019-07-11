@@ -7,8 +7,8 @@ from pydantic import BaseModel
 
 
 class RoleType(str, Enum):
-    SYSTEM_WIDE = "SystemWide"
-    EVENT_WIDE = "EventWide"
+    SYSTEM_WIDE = "SYSTEM_WIDE"
+    EVENT_WIDE = "EVENT_WIDE"
 
 
 class RoleAccessType(str, Enum):
