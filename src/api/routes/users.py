@@ -30,7 +30,7 @@ def get_users(db,
               skip: int = 0,
               limit: int = 25,
               search: str = None,
-              sort: List[str] = Query([], alias="sort_by")):
+              sort: List[str] = None):
     filter_params = dict()
     search_fields = ["uuid", "name"]
     if search:
@@ -47,6 +47,15 @@ def get_users(db,
 def get_user(user_id: str, db):
     data = CRUD.find_by_uuid(db, "users", user_id)
     return User(**data)
+
+
+def get_user_by_name(name: str, db):
+    data = get_users(db, search=name)
+    if len(data) == 0:
+        raise ValueError("User not found with name [%s]", name)
+    if len(data) > 1:
+        raise ValueError("Multiple Users found with name [%s]", name)
+    return data[0]
 
 
 def update_user(user_id: str, user: UserCreate, db):

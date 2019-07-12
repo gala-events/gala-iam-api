@@ -30,7 +30,7 @@ def get_user_groups(db,
                     skip: int = 0,
                     limit: int = 25,
                     search: str = None,
-                    sort: List[str] = Query([], alias="sort_by")):
+                    sort: List[str] = None):
     filter_params = dict()
     search_fields = ["uuid", "name"]
     if search:
@@ -47,6 +47,15 @@ def get_user_groups(db,
 def get_user_group(user_group_id: str, db):
     data = CRUD.find_by_uuid(db, "user_groups", user_group_id)
     return UserGroup(**data)
+
+
+def get_user_group_by_name(name: str, db):
+    data = get_user_groups(db, search=name)
+    if len(data) == 0:
+        raise ValueError("UserGroup not found with name [%s]", name)
+    if len(data) > 1:
+        raise ValueError("Multiple UserGroups found with name [%s]", name)
+    return UserGroup(**data[0])
 
 
 def update_user_group(user_group_id: str, user_group: UserGroupCreate, db):

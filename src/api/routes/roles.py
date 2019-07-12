@@ -30,7 +30,7 @@ def get_roles(db,
               skip: int = 0,
               limit: int = 25,
               search: str = None,
-              sort: List[str] = Query([], alias="sort_by")):
+              sort: List[str] = None):
     filter_params = dict()
     search_fields = ["uuid", "name"]
     if search:
@@ -47,6 +47,15 @@ def get_roles(db,
 def get_role(role_id: str, db):
     data = CRUD.find_by_uuid(db, "roles", role_id)
     return Role(**data)
+
+
+def get_role_by_name(name: str, db):
+    data = get_roles(db, search=name)
+    if len(data) == 0:
+        raise ValueError("Role not found with name [%s]", name)
+    if len(data) > 1:
+        raise ValueError("Multiple Roles found with name [%s]", name)
+    return data[0]
 
 
 def update_role(role_id: str, role: RoleCreate, db):

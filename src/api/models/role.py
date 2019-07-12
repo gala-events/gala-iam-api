@@ -21,7 +21,7 @@ class RoleAccessType(str, Enum):
 
 
 class RoleMeta(BaseModel):
-    name: str
+    namespace: List[str]
 
 
 class RoleRules(BaseModel):
@@ -31,6 +31,7 @@ class RoleRules(BaseModel):
 
 
 class RoleCreate(BaseModel):
+    name: str
     kind: RoleType
     metadata: RoleMeta
     rules: List[RoleRules]
@@ -42,5 +43,6 @@ class Role(RoleCreate):
 
 class RolePartial(BaseModel):
     kind: RoleType = None
+    name: str = None
     metadata: RoleMeta = None
     rules: List[RoleRules] = None

@@ -10,16 +10,51 @@ from starlette.status import (HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
                               HTTP_404_NOT_FOUND)
 
 from db import CRUD, Database
-from models import Permission, PermissionCreate, PermissionPartial
+from models import (Permission, PermissionCreate, PermissionPartial, User,
+                    UserGroup)
+from routes.roles import get_role_by_name
+from routes.user_groups import get_user_group_by_name
+from routes.users import get_user_by_name
 from utils import get_db, json_merge_patch
 from utils.exceptions import RecordNotFoundException
 
 routes = APIRouter()
 
 
-def create_permission(permission: PermissionCreate, db: Database):
+def __check_if_subject_exists(kind, name, db):
+    handlers = {
+        User.__name__: get_user_by_name,
+        UserGroup.__name__: get_user_group_by_name
+    }
+    if kind not in handlers:
+        raise TypeError(
+            "%s not registered as a valid Permission Subject kind" % kind)
+    subject_handler = handlers[kind]
+    subject = subject_handler(name, db)
+    return subject
+
+
+def __check_if_role_exists(name, db):
+    role = get_role_by_name(name, db)
+    return role
+
+
+def __validate_permission(permission, db):
     permission_data = permission.dict()
-    permission_id = CRUD.create(db, "permissions", permission_data)
+    subjects = permission_data["subjects"]
+    for subject in subjects:
+        subject_kind = subject["kind"]
+        subject_name = subject["name"]
+        __check_if_subject_exists(subject_kind, subject_name, db)
+
+    role = permission_data["role"]
+    role_name = role["name"]
+    __check_if_role_exists(role_name, db)
+
+
+def create_permission(permission: PermissionCreate, db: Database):
+    __validate_permission(permission, db)
+    permission_id = CRUD.create(db, "permissions", permission.dict())
     permission_record = CRUD.find_by_uuid(
         db, "permissions", str(permission_id))
     permission = Permission(**permission_record)
@@ -30,7 +65,7 @@ def get_permissions(db,
                     skip: int = 0,
                     limit: int = 25,
                     search: str = None,
-                    sort: List[str] = Query([], alias="sort_by")):
+                    sort: List[str] = None):
     filter_params = dict()
     search_fields = ["uuid", "name"]
     if search:
@@ -49,7 +84,17 @@ def get_permission(permission_id: str, db):
     return Permission(**data)
 
 
+def get_permission_by_name(name: str, db):
+    data = get_permissions(db, search=name)
+    if len(data) == 0:
+        raise ValueError("Permission not found with name [%s]", name)
+    if len(data) > 1:
+        raise ValueError("Multiple Permissions found with name [%s]", name)
+    return Permission(**data[0])
+
+
 def update_permission(permission_id: str, permission: PermissionCreate, db):
+    __validate_permission(permission, db)
     data = CRUD.update(db, "permissions",
                        permission_id, permission.dict())
     return Permission(**data)
@@ -58,10 +103,11 @@ def update_permission(permission_id: str, permission: PermissionCreate, db):
 def partial_update_permission(permission_id: str, permission: PermissionPartial, db):
     existing_permission = CRUD.find_by_uuid(
         db, "permissions", permission_id)
-    updated_permission = json_merge_patch(
+    updated_permission_data = json_merge_patch(
         existing_permission, permission.dict(skip_defaults=True))
+    __validate_permission(Permission(**updated_permission_data), db)
     data = CRUD.update(db, "permissions", permission_id,
-                       updated_permission)
+                       updated_permission_data)
     return Permission(**data)
 
 
