@@ -31,7 +31,7 @@ def get_service_accounts(db,
                          skip: int = 0,
                          limit: int = 25,
                          search: str = None,
-                         sort: List[str] = Query([], alias="sort_by")):
+                         sort: List[str] = None):
     filter_params = dict()
     search_fields = ["uuid", "name"]
     if search:
@@ -48,6 +48,15 @@ def get_service_accounts(db,
 def get_service_account(service_account_id: str, db):
     data = CRUD.find_by_uuid(db, "service_accounts", service_account_id)
     return ServiceAccount(**data)
+
+
+def get_service_account_by_name(name: str, db):
+    data = get_service_accounts(db, search=name)
+    if len(data) == 0:
+        raise ValueError("ServiceAccount not found with name [%s]", name)
+    if len(data) > 1:
+        raise ValueError("Multiple ServiceAccounts found with name [%s]", name)
+    return ServiceAccount(**data[0])
 
 
 def update_service_account(service_account_id: str, service_account: ServiceAccountCreate, db):

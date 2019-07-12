@@ -17,7 +17,6 @@ class PermissionType(str, Enum):
 
 
 class PermissionMetadata(BaseModel):
-    name: str
     namespace: List[str]
 
 
@@ -39,6 +38,7 @@ class PermissionSubject(BaseModel):
 
 class PermissionCreate(BaseModel):
     kind: PermissionType
+    name: str
     metadata: PermissionMetadata
     role: PermissionRoleRef
     subjects: List[PermissionSubject]
@@ -50,6 +50,7 @@ class Permission(PermissionCreate):
 
 class PermissionPartial(BaseModel):
     kind: PermissionType = None
+    name: str = None
     metadata: PermissionMetadata = None
     role: PermissionRoleRef = None
     subjects: List[PermissionSubject] = None
