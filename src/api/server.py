@@ -6,17 +6,16 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from db import Database
-from routes import permissions, roles, service_accounts, user_groups, users
+from routes import permissions, roles, service_accounts, user_groups, users, resources, resource_actions
 from utils import get_db
 
 MONGO_DB__HOST_URI = os.environ.get("MONGO_DB__HOST_URI", "localhost")
 MONGO_DB__HOST_PORT = int(os.environ.get("MONGO_DB__HOST_PORT", 27017))
 db_connection = MongoClient(host=MONGO_DB__HOST_URI, port=MONGO_DB__HOST_PORT)
 
-app = FastAPI(title="GALA Authorization Management API",
-              description="Authorization Management module for managing authorization on GALA resources",
-              openapi_url="/gala_authz_api__openapi.json",
-              version="v1")
+app = FastAPI(title="GALA Identity and Access Management API",
+              description="Authentication and Authorization Management module for GALA resources",
+              openapi_url="/gala_iam_api__openapi.json")
 
 
 @app.middleware("http")
@@ -30,6 +29,9 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 app.include_router(roles.routes, tags=["CRUD on Roles"])
+app.include_router(resources.routes, tags=["CRUD on Resources"])
+app.include_router(resource_actions.routes, tags=[
+                   "CRUD on Resources Actions"])
 app.include_router(permissions.routes, tags=["CRUD on Permissions"])
 app.include_router(users.routes, tags=["CRUD on Users"])
 app.include_router(service_accounts.routes, tags=["CRUD on Service Accounts"])
