@@ -5,10 +5,9 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.role import RoleType
-from models.service_account import ServiceAccount
-from models.user import User
-from models.user_group import UserGroup
+from models.base_record import BaseRecord
+
+PERMISSION_MODEL_NAME = "permissions"
 
 
 class PermissionType(str, Enum):
@@ -21,14 +20,15 @@ class PermissionMetadata(BaseModel):
 
 
 class PermissionRoleRef(BaseModel):
-    kind: RoleType
+    kind: str
     name: str
 
 
 class PermissionSubjectKind(str, Enum):
-    USER = User.__name__
-    SERVICE_ACCOUNT = ServiceAccount.__name__
-    USER_GROUP = UserGroup.__name__
+    pass
+    # USER = User.__name__
+    # SERVICE_ACCOUNT = ServiceAccount.__name__
+    # USER_GROUP = UserGroup.__name__
 
 
 class PermissionSubject(BaseModel):
@@ -44,8 +44,10 @@ class PermissionCreate(BaseModel):
     subjects: List[PermissionSubject]
 
 
-class Permission(PermissionCreate):
-    uuid: UUID
+class Permission(BaseRecord, PermissionCreate):
+    @property
+    def model_name(self):
+        return PERMISSION_MODEL_NAME
 
 
 class PermissionPartial(BaseModel):
