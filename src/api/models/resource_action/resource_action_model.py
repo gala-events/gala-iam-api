@@ -5,18 +5,21 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.resource import ResourceKind
+from models.base_record import BaseRecord
+
+RESOURCE_ACTION_MODEL_NAME = "resource_actions"
 
 
 class ResourceActionCreate(BaseModel):
     name: str
-    kind: ResourceKind
+    kind: str
 
 
-class ResourceAction(ResourceActionCreate):
-    uuid: UUID
+class ResourceAction(BaseRecord, ResourceActionCreate):
+    def model_name(self):
+        return RESOURCE_ACTION_MODEL_NAME
 
 
 class ResourceActionPartial(BaseModel):
     name: str = None
-    kind: ResourceKind = None
+    kind: str = None

@@ -5,6 +5,10 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from models.base_record import BaseRecord
+
+ROLE_MODEL_NAME = "roles"
+
 
 class RoleType(str, Enum):
     SYSTEM_WIDE = "SYSTEM_WIDE"
@@ -37,8 +41,10 @@ class RoleCreate(BaseModel):
     rules: List[RoleRules]
 
 
-class Role(RoleCreate):
-    uuid: UUID
+class Role(BaseRecord, RoleCreate):
+    @property
+    def model_name(self):
+        return ROLE_MODEL_NAME
 
 
 class RolePartial(BaseModel):
