@@ -53,8 +53,11 @@ class BaseRecordManager:
             search_fields = ["uuid"]
 
         if search:
+            filter_params["$or"] = []
             for search_field in search_fields:
-                filter_params[search_field] = re.compile(search, re.IGNORECASE)
+                filter_params["$or"].append({
+                    search_field: re.compile(search, re.IGNORECASE)
+                })
 
         data = CRUD.find(db, cls.model_name, skip=skip,
                          limit=limit,
@@ -94,18 +97,16 @@ class BaseRecordManager:
             ValidationError: Raise ValidationError if unique is passed as True and multiple records are fetched
 
         Returns:
-            Union[BaseRecord, List[BaseRecord]] -- Returns either a list of BaseRecord or a single BaseRecord.
+            List[BaseRecord] -- Returns a list of BaseRecord.
         """
-        records = cls.find(db, search=name, search_fields=["name"])
-        if len(records) == 0:
-            raise ValidationError(
-                "%s not found with name [%s]" % (cls.model.__name__, name))
+        records = cls.find(db, search=name, search_fields=[
+            "name", "metadata.name"])
 
         if unique:
             if len(records) > 1:
-                raise ValidationError(
-                    "Multiple %ss found with name [%s]" % (cls.model.__name__, name))
-            return records[0]
+                errors = ["Multiple %ss found with name [%s]" %
+                          (cls.model.__name__, name)]
+                raise ValidationError(errors)
 
         return records
 
