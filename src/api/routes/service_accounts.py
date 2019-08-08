@@ -70,7 +70,7 @@ def update_service_account_api(service_account_id: str, service_account: Service
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s service_account. %s" % (service_account_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s service_account. %s" % (service_account_id, str(exc.raw_errors))))
 
 
 @routes.patch("/service_accounts/{service_account_id}", response_model=ServiceAccount)
@@ -85,7 +85,7 @@ def partial_update_service_account_api(service_account_id: str, service_account:
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s service_account. %s" % (service_account_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s service_account. %s" % (service_account_id, str(exc.raw_errors))))
 
 
 @routes.delete("/service_accounts/{service_account_id}")

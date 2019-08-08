@@ -6,7 +6,8 @@ from pydantic.error_wrappers import ValidationError
 from pydantic.main import BaseModel
 
 from db import CRUD, Database
-from models.base_record import BaseRecord
+from models.base_record import DEFAULT_NAMESPACE, BaseRecord
+from utils.exceptions import RecordNotFoundException
 from utils.json_merge_patch import json_merge_patch
 
 
@@ -72,8 +73,10 @@ class BaseRecordManager:
         Returns:
             BaseRecord -- BaseRecord subclass instance which has been persisted in DB
         """
-        data = CRUD.find_by_uuid(db, cls.model_name, record_uuid)
-        return cls.model(**data)
+        data = CRUD.find_by_uuid(
+            db, cls.model_name, record_uuid)
+        record = cls.model(**data)
+        return record
 
     @classmethod
     def find_by_name(cls, db: Database, name: str, unique=True) -> Union[BaseRecord, List[BaseRecord]]:

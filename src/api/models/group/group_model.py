@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from pydantic.schema import Schema
 
-from models.base_record import BaseRecord, BaseRecordConfig
+from models.base_record import DEFAULT_NAMESPACE, BaseRecord, BaseRecordConfig
 
 GROUP_MODEL_NAME = "groups"
 
@@ -17,21 +17,26 @@ class GroupSubjectKind(str, Enum):
 
 
 class GroupSubject(BaseRecordConfig):
-    name: str
     kind: GroupSubjectKind
+    name: str
+
+
+class GroupMetadata(BaseRecordConfig):
+    name: str
 
 
 class GroupCreate(BaseRecordConfig):
-    name: str
+    metadata: GroupMetadata
     subjects: List[GroupSubject]
 
 
 class Group(BaseRecord, GroupCreate):
-
+    metadata: GroupMetadata
     @property
     def model_name(self):
         return GROUP_MODEL_NAME
 
 
 class GroupPartial(BaseRecordConfig):
-    subjects: List[GroupSubject] = None
+    metadata: GroupMetadata = None
+    subjects: List[GroupSubject] = []

@@ -5,4 +5,7 @@ class RecordNotFoundException(Exception):
         self.record_id = record_id
 
     def __repr__(self):
-        return f"Record: {self.record_id} for Model {self.model_name} not found"
+        return f"Model {self.model_name}'s [{self.record_id}] not found"
+
+    def __str__(self):
+        return f"Record: {self.record_id} for Model '{self.model_name}' not found"

@@ -13,11 +13,9 @@ class GroupManager(BaseRecordManager):
 
     model = Group
     model_name = GROUP_MODEL_NAME
-
     @classmethod
-    def create(cls, db: Database, record: GroupCreate) -> Group:
-        """Creates a new Group after validating subjects.
-
+    def validate_group(cls, db: Database, record: GroupCreate):
+        """Validates group record
 
         Arguments:
             db {Database} -- Database connection
@@ -25,9 +23,6 @@ class GroupManager(BaseRecordManager):
 
         Raises:
             ValidationError: Raises ValidationError if subject kind is not supported
-
-        Returns:
-            Group -- newly created group
         """
         new_group = record
         for subject in new_group.subjects:
@@ -42,4 +37,34 @@ class GroupManager(BaseRecordManager):
                 raise ValidationError(
                     "Subject kind %s not supported" % subject_kind)
 
+    @classmethod
+    def create(cls, db: Database, record: GroupCreate) -> Group:
+        """Creates a new Group after validating subjects.
+
+
+        Arguments:
+            db {Database} -- Database connection
+            record {GroupCreate} -- New Group data
+
+        Returns:
+            Group -- newly created group
+        """
+        cls.validate_group(db, record)
         return super(GroupManager, cls).create(db, record)
+
+    @classmethod
+    def update(cls, db: Database, record_uuid: str, record: GroupCreate) -> Group:
+        """Updates the existing Group after validating data
+
+        Arguments:
+            db {Database} -- Database connection
+            record_uuid {str} -- unique record uuid
+            record {BaseModel} -- updating record
+
+        Returns:
+            BaseRecord -- Updated record
+        """
+        cls.find_by_uuid(db, record_uuid)
+        updated_record = cls.model(**record.dict(), uuid=record_uuid)
+        cls.validate_group(db, updated_record)
+        return super(GroupManager, cls).update(db, record_uuid, record)
