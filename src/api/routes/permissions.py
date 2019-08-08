@@ -69,7 +69,7 @@ def update_permission_api(permission_id: str, permission: PermissionCreate, resp
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s permission. %s" % (permission_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s permission. %s" % (permission_id, str(exc.raw_errors))))
 
 
 @routes.patch("/permissions/{permission_id}", response_model=Permission)
@@ -84,7 +84,7 @@ def partial_update_permission_api(permission_id: str, permission: PermissionPart
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s permission. %s" % (permission_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s permission. %s" % (permission_id, str(exc.raw_errors))))
 
 
 @routes.delete("/permissions/{permission_id}")

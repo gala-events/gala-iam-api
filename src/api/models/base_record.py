@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 from uuid import UUID, uuid4
 
 from pydantic.main import BaseModel
+from pydantic.schema import Schema
 
 from db import CRUD, Database
+
+DEFAULT_NAMESPACE = "default"
 
 
 class BaseRecordConfig(BaseModel, ABC):
@@ -17,7 +21,8 @@ class BaseRecord(BaseRecordConfig, ABC):
     Keyword Arguments:
         metaclass {[type]} -- Metaclass Abstract base class to support abstract methods (default: {ABCMeta})
     """
-    uuid: str = None
+    kind: Optional[str] = Schema(..., readonly=True)
+    uuid: Optional[str] = Schema(..., readonly=True)
 
     @property
     @abstractmethod
@@ -27,10 +32,15 @@ class BaseRecord(BaseRecordConfig, ABC):
 
     def save(self, db: Database):
         """Persist the changed/new record to the database"""
+        self.kind = self.model_name
+        data = self.dict()
+        data["metadata"] = data.get("metadata", {})
+        data["metadata"]["namespace"] = data["metadata"].get(
+            "namespace", DEFAULT_NAMESPACE)
         if self.uuid is None:
-            self.uuid = CRUD.create(db, self.model_name, self.dict())
+            self.uuid = CRUD.create(db, self.model_name, data)
         else:
-            CRUD.update(db, self.model_name, self.uuid, self.dict())
+            CRUD.update(db, self.model_name, self.uuid, data)
 
     def delete(self, db: Database):
         """Deletes the record from the database"""

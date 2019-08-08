@@ -70,7 +70,7 @@ def update_resource_action_api(resource_action_id: str, resource_action: Resourc
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s resource_action. %s" % (resource_action_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s resource_action. %s" % (resource_action_id, str(exc.raw_errors))))
 
 
 @routes.patch("/resource_actions/{resource_action_id}", response_model=ResourceAction)
@@ -85,7 +85,7 @@ def partial_update_resource_action_api(resource_action_id: str, resource_action:
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s resource_action. %s" % (resource_action_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s resource_action. %s" % (resource_action_id, str(exc.raw_errors))))
 
 
 @routes.delete("/resource_actions/{resource_action_id}")

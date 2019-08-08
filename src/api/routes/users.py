@@ -68,7 +68,7 @@ def update_user_api(user_id: str, user: UserCreate, response: Response, db=Depen
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s user. %s" % (user_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s user. %s" % (user_id, str(exc.raw_errors))))
 
 
 @routes.patch("/users/{user_id}", response_model=User)
@@ -82,7 +82,7 @@ def partial_update_user_api(user_id: str, user: UserPartial, response: Response,
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s user. %s" % (user_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s user. %s" % (user_id, str(exc.raw_errors))))
 
 
 @routes.delete("/users/{user_id}")

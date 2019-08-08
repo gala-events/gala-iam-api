@@ -71,7 +71,7 @@ def update_group_api(group_id: str, group: GroupCreate, response: Response, db=D
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s group. %s" % (group_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s group. %s" % (group_id, str(exc.raw_errors))))
 
 
 @routes.patch("/groups/{group_id}", response_model=Group)
@@ -85,7 +85,7 @@ def partial_update_group_api(group_id: str, group: GroupPartial, response: Respo
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s group. %s" % (group_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s group. %s" % (group_id, str(exc.raw_errors))))
 
 
 @routes.delete("/groups/{group_id}")

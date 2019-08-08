@@ -68,7 +68,7 @@ def update_role_api(role_id: str, role: RoleCreate, response: Response, db=Depen
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s role. %s" % (role_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s role. %s" % (role_id, str(exc.raw_errors))))
 
 
 @routes.patch("/roles/{role_id}", response_model=Role)
@@ -82,7 +82,7 @@ def partial_update_role_api(role_id: str, role: RolePartial, response: Response,
         return JSONResponse(dict(error=str(exc)))
     except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to update %s role. %s" % (role_id, str(exc))))
+        return JSONResponse(dict(error="Failed to update %s role. %s" % (role_id, str(exc.raw_errors))))
 
 
 @routes.delete("/roles/{role_id}")
