@@ -26,9 +26,9 @@ def create_user_api(user: UserCreate, response: Response, db=Depends(get_db)):
         new_user = UserManager.create(db, user)
         response.status_code = HTTP_201_CREATED
         return new_user
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create user"))
+        return JSONResponse({"error": "Failed to create user: %s" % exc.raw_errors})
 
 
 @routes.get("/users", response_model=List[User])

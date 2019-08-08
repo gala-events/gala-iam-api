@@ -26,9 +26,9 @@ def create_resource_api(resource: ResourceCreate, response: Response, db=Depends
         new_resource = ResourceManager.create(db, resource)
         response.status_code = HTTP_201_CREATED
         return new_resource
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create resource"))
+        return JSONResponse({"error": "Failed to create resource: %s" % exc.raw_errors})
 
 
 @routes.get("/resources", response_model=List[Resource])

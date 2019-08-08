@@ -26,9 +26,9 @@ def create_service_account_api(service_account: ServiceAccountCreate, response: 
         new_service_account = ServiceAccountManager.create(db, service_account)
         response.status_code = HTTP_201_CREATED
         return new_service_account
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create service_account"))
+        return JSONResponse({"error": "Failed to create service_account: %s" % exc.raw_errors})
 
 
 @routes.get("/service_accounts", response_model=List[ServiceAccount])
