@@ -26,9 +26,9 @@ def create_resource_action_api(resource_action: ResourceActionCreate, response: 
         new_resource_action = ResourceActionManager.create(db, resource_action)
         response.status_code = HTTP_201_CREATED
         return new_resource_action
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create resource_action"))
+        return JSONResponse({"error": "Failed to create resource_action: %s" % exc.raw_errors})
 
 
 @routes.get("/resource_actions", response_model=List[ResourceAction])

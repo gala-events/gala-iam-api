@@ -13,7 +13,7 @@ GROUP_MODEL_NAME = "groups"
 
 class GroupSubjectKind(str, Enum):
     USER = "USER"
-    SERVICE_ACCOUNT: "SERVICE_ACCOUNT"
+    SERVICE_ACCOUNT = "SERVICE_ACCOUNT"
 
 
 class GroupSubject(BaseRecordConfig):

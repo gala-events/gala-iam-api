@@ -26,9 +26,9 @@ def create_role_api(role: RoleCreate, response: Response, db=Depends(get_db)):
         new_role = RoleManager.create(db, role)
         response.status_code = HTTP_201_CREATED
         return new_role
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create role"))
+        return JSONResponse({"error": "Failed to create role: %s" % exc.raw_errors})
 
 
 @routes.get("/roles", response_model=List[Role])

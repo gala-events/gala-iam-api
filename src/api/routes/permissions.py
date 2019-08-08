@@ -26,9 +26,9 @@ def create_permission_api(permission: PermissionCreate, response: Response, db=D
         new_permission = PermissionManager.create(db, permission)
         response.status_code = HTTP_201_CREATED
         return new_permission
-    except ValidationError:
+    except ValidationError as exc:
         response.status_code = HTTP_400_BAD_REQUEST
-        return JSONResponse(dict(error="Failed to create permission"))
+        return JSONResponse({"error": "Failed to create permission: %s" % exc.raw_errors})
 
 
 @routes.get("/permissions", response_model=List[Permission])
