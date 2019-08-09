@@ -5,54 +5,40 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.base_record import BaseRecord
+from models.base_record import BaseRecord, BaseRecordConfig
 
 PERMISSION_MODEL_NAME = "permissions"
 
 
-class PermissionType(str, Enum):
-    SYSTEM_WIDE = "SYSTEM_WIDE"
-    EVENT_WIDE = "EVENT_WIDE"
-
-
-class PermissionMetadata(BaseModel):
-    namespace: List[str]
-
-
-class PermissionRoleRef(BaseModel):
-    kind: str
-    name: str
-
-
 class PermissionSubjectKind(str, Enum):
-    pass
-    # USER = User.__name__
-    # SERVICE_ACCOUNT = ServiceAccount.__name__
-    # USER_GROUP = UserGroup.__name__
+    USER = "USER"
+    SERVICE_ACCOUNT = "SERVICE_ACCOUNT"
+    GROUP = "GROUP"
 
 
-class PermissionSubject(BaseModel):
+class PermissionSubject(BaseRecordConfig):
     kind: PermissionSubjectKind
     name: str
 
 
-class PermissionCreate(BaseModel):
-    kind: PermissionType
+class PermissionMetadata(BaseRecordConfig):
     name: str
+
+
+class PermissionCreate(BaseRecordConfig):
     metadata: PermissionMetadata
-    role: PermissionRoleRef
-    subjects: List[PermissionSubject]
+    role: str
+    subjects: List[PermissionSubject] = None
 
 
 class Permission(BaseRecord, PermissionCreate):
+    metadata: PermissionMetadata
     @property
     def model_name(self):
         return PERMISSION_MODEL_NAME
 
 
-class PermissionPartial(BaseModel):
-    kind: PermissionType = None
-    name: str = None
+class PermissionPartial(BaseRecordConfig):
     metadata: PermissionMetadata = None
-    role: PermissionRoleRef = None
-    subjects: List[PermissionSubject] = None
+    role: str = None
+    subjects: List[PermissionSubject]
