@@ -27,15 +27,16 @@ class RoleManager(BaseRecordManager):
         """
         new_role = record
         for rule in new_role.rules:
-            resources = ResourceManager.find(db, filter_params={
-                "metadata.name": rule.resource,
-                "metadata.resource_kind": rule.resource_kind,
-            })
-            if not resources:
-                message = f"Kind [{rule.resource_kind}] doesn't exists."
-                if rule.resource:
-                    message = f"Resource [{rule.resource}] of {message}"
-                raise ValidationError(message)
+            if rule.resource:
+                resources = ResourceManager.find(db, filter_params={
+                    "metadata.name": rule.resource,
+                    "metadata.resource_kind": rule.resource_kind,
+                })
+                if not resources:
+                    message = f"Kind [{rule.resource_kind}] doesn't exists."
+                    if rule.resource:
+                        message = f"Resource [{rule.resource}] of {message}"
+                    raise ValidationError(message)
 
             for resource_action in rule.resource_actions:
                 resource_kind = rule.resource_kind
