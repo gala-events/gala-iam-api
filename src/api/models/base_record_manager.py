@@ -32,7 +32,7 @@ class BaseRecordManager:
         return new_record
 
     @classmethod
-    def find(cls, db: Database, skip: int = 0, limit: int = 25, sort: List[str] = None, search: str = None, search_fields: List[str] = None) -> List[BaseRecord]:
+    def find(cls, db: Database, skip: int = 0, limit: int = 25, sort: List[str] = None, search: str = None, search_fields: List[str] = None, filter_params=None) -> List[BaseRecord]:
         """Fetches Records from Database with filtering and searching support
 
         Arguments:
@@ -48,7 +48,9 @@ class BaseRecordManager:
         Returns:
             List[BaseRecord] -- List of BaseRecord instances that are persisted in DB
         """
-        filter_params = dict()
+        if filter_params is None or not isinstance(filter_params, dict):
+            filter_params = dict()
+
         if search_fields is None:
             search_fields = ["uuid"]
 
