@@ -2,7 +2,8 @@ from pydantic.error_wrappers import ValidationError
 
 from db.database import Database
 from models.base_record_manager import BaseRecordManager
-from models.group.group_model import GROUP_MODEL_NAME, Group, GroupCreate
+from models.group.group_model import (GROUP_MODEL_NAME, Group, GroupCreate,
+                                      GroupPartial)
 from models.service_account.service_account_manager import \
     ServiceAccountManager
 from models.user.user_manager import UserManager
@@ -62,7 +63,7 @@ class GroupManager(BaseRecordManager):
         return super(GroupManager, cls).create(db, record)
 
     @classmethod
-    def update(cls, db: Database, record_uuid: str, record: GroupCreate) -> Group:
+    def update(cls, db: Database, record_uuid: str, record: GroupPartial) -> Group:
         """Updates the existing Group after validating data
 
         Arguments:

@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.base_record import BaseRecord
+from models.base_record import BaseRecord, BaseRecordConfig
 
 RESOURCE_MODEL_NAME = "resources"
 
@@ -14,17 +14,21 @@ class ResourceKind(str, Enum):
     EVENT = "EVENT"
 
 
-class ResourceCreate(BaseModel):
+class ResourceMetadata(BaseRecordConfig):
     name: str
-    kind: ResourceKind
+    resource_kind: ResourceKind
+
+
+class ResourceCreate(BaseRecordConfig):
+    metadata: ResourceMetadata
 
 
 class Resource(BaseRecord, ResourceCreate):
+    metadata: ResourceMetadata
     @property
     def model_name(self):
         return RESOURCE_MODEL_NAME
 
 
-class ResourcePartial(BaseModel):
-    name: str = None
-    kind: ResourceKind = None
+class ResourcePartial(BaseRecordConfig):
+    metadata: ResourceMetadata = None

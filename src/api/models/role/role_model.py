@@ -1,44 +1,35 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.base_record import BaseRecord
+from models.base_record import BaseRecord, BaseRecordConfig
+from models.resource.resource_model import ResourceKind
 
 ROLE_MODEL_NAME = "roles"
 
 
-class RoleType(str, Enum):
+class RoleScope(str, Enum):
     SYSTEM_WIDE = "SYSTEM_WIDE"
-    EVENT_WIDE = "EVENT_WIDE"
+    RESOURCE_WIDE = "RESOURCE_WIDE"
 
 
-class RoleAccessType(str, Enum):
-    GET = "get"
-    LIST = "list"
-    UPDATE = "update"
-    CREATE = "create"
-    PATCH = "patch"
-    DELETE = "delete"
-
-
-class RoleMeta(BaseModel):
-    namespace: List[str]
-
-
-class RoleRules(BaseModel):
-    resources: List[str]
-    resouceNames: List[str] = None
-    access_type: List[RoleAccessType]
-
-
-class RoleCreate(BaseModel):
+class RoleMetadata(BaseRecordConfig):
     name: str
-    kind: RoleType
-    metadata: RoleMeta
-    rules: List[RoleRules]
+    scope: RoleScope
+
+
+class RoleRule(BaseRecordConfig):
+    resource: Optional[str] = None
+    resource_kind: ResourceKind = ResourceKind.EVENT
+    access_type: List[str]
+
+
+class RoleCreate(BaseRecordConfig):
+    metadata: RoleMetadata
+    rules: List[RoleRule] = []
 
 
 class Role(BaseRecord, RoleCreate):
@@ -47,8 +38,6 @@ class Role(BaseRecord, RoleCreate):
         return ROLE_MODEL_NAME
 
 
-class RolePartial(BaseModel):
-    kind: RoleType = None
-    name: str = None
-    metadata: RoleMeta = None
-    rules: List[RoleRules] = None
+class RolePartial(BaseRecordConfig):
+    metadata: RoleMetadata = None
+    rules: List[RoleRule] = None
