@@ -30,9 +30,24 @@ class BaseRecord(BaseRecordConfig, ABC):
         """Returns model name to be used while creating DB tables"""
         return "base_record"
 
+    def pre_save(self, db: Database):
+        """Hook to override beforing saving/updating the record"""
+
+    def post_save(self, db: Database):
+        """Hook to override after saving/updating the record"""
+
+    def pre_delete(self, db: Database):
+        """Hook to override beforing deleting the record"""
+
+    def post_delete(self, db: Database):
+        """Hook to override after deleting the record"""
+
     def save(self, db: Database):
         """Persist the changed/new record to the database"""
         self.kind = self.model_name
+
+        self.pre_save(db)
+
         data = self.dict()
         data["metadata"] = data.get("metadata", {})
         data["metadata"]["namespace"] = data["metadata"].get(
@@ -42,9 +57,16 @@ class BaseRecord(BaseRecordConfig, ABC):
         else:
             CRUD.update(db, self.model_name, self.uuid, data)
 
+        self.post_save(db)
+
     def delete(self, db: Database):
         """Deletes the record from the database"""
+
+        self.pre_delete(db)
+
         if self.uuid is None:
             raise Exception("Cannot delete: no record uuid found")
         else:
             CRUD.delete(db, self.model_name, self.uuid)
+
+        self.post_delete(db)

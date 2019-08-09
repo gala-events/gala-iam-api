@@ -1,9 +1,10 @@
 from pydantic.error_wrappers import ValidationError
 
 from db.database import Database
-
 from models.base_record_manager import BaseRecordManager
-from models.service_account.service_account_model import SERVICE_ACCOUNT_MODEL_NAME, ServiceAccount, ServiceAccountCreate
+from models.service_account.service_account_model import (
+    SERVICE_ACCOUNT_MODEL_NAME, ServiceAccount, ServiceAccountCreate,
+    ServiceAccountPartial)
 
 
 class ServiceAccountManager(BaseRecordManager):
@@ -33,7 +34,7 @@ class ServiceAccountManager(BaseRecordManager):
         return super(ServiceAccountManager, cls).create(db, record)
 
     @classmethod
-    def update(cls, db: Database, record_uuid: str, record: ServiceAccountCreate) -> ServiceAccount:
+    def update(cls, db: Database, record_uuid: str, record: ServiceAccountPartial) -> ServiceAccount:
         """Updates the existing ServiceAccount after validating data
 
         Arguments:

@@ -1,18 +1,23 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Union
+from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.base_record import BaseRecord
+from models.base_record import BaseRecord, BaseRecordConfig
 
 RESOURCE_ACTION_MODEL_NAME = "resource_actions"
 
 
-class ResourceActionCreate(BaseModel):
+class ResourceActionMetadata(BaseRecordConfig):
     name: str
-    kind: str
+    resource_kind: str
+    resource: Optional[str] = None
+
+
+class ResourceActionCreate(BaseRecordConfig):
+    metadata: ResourceActionMetadata
 
 
 class ResourceAction(BaseRecord, ResourceActionCreate):
@@ -20,6 +25,5 @@ class ResourceAction(BaseRecord, ResourceActionCreate):
         return RESOURCE_ACTION_MODEL_NAME
 
 
-class ResourceActionPartial(BaseModel):
-    name: str = None
-    kind: str = None
+class ResourceActionPartial(BaseRecordConfig):
+    metadata: ResourceActionMetadata = None

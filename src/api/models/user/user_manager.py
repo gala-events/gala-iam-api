@@ -1,9 +1,9 @@
 from pydantic.error_wrappers import ValidationError
 
 from db.database import Database
-
 from models.base_record_manager import BaseRecordManager
-from models.user.user_model import USER_MODEL_NAME, User, UserCreate
+from models.user.user_model import (USER_MODEL_NAME, User, UserCreate,
+                                    UserPartial)
 
 
 class UserManager(BaseRecordManager):
@@ -32,7 +32,7 @@ class UserManager(BaseRecordManager):
         return super(UserManager, cls).create(db, record)
 
     @classmethod
-    def update(cls, db: Database, record_uuid: str, record: UserCreate) -> User:
+    def update(cls, db: Database, record_uuid: str, record: UserPartial) -> User:
         """Updates the existing User after validating data
 
         Arguments:
