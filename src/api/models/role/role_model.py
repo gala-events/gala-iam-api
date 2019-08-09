@@ -11,20 +11,14 @@ from models.resource.resource_model import ResourceKind
 ROLE_MODEL_NAME = "roles"
 
 
-class RoleScope(str, Enum):
-    SYSTEM_WIDE = "SYSTEM_WIDE"
-    RESOURCE_WIDE = "RESOURCE_WIDE"
-
-
 class RoleMetadata(BaseRecordConfig):
     name: str
-    scope: RoleScope
 
 
 class RoleRule(BaseRecordConfig):
     resource: Optional[str] = None
     resource_kind: ResourceKind = ResourceKind.EVENT
-    access_type: List[str]
+    resource_actions: List[str]
 
 
 class RoleCreate(BaseRecordConfig):
