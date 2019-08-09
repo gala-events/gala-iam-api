@@ -3,6 +3,8 @@ from pydantic.error_wrappers import ValidationError
 from db.database import Database
 from models.base_record_manager import BaseRecordManager
 from models.resource.resource_manager import ResourceManager
+from models.resource_action.resource_action_manager import \
+    ResourceActionManager
 from models.role.role_model import (ROLE_MODEL_NAME, Role, RoleCreate,
                                     RolePartial)
 
@@ -25,16 +27,36 @@ class RoleManager(BaseRecordManager):
         """
         new_role = record
         for rule in new_role.rules:
-            if rule.resource:
-                resources = ResourceManager.find_by_name(db, rule.resource)
-                if len(resources) != 1:
-                    raise ValidationError(
-                        "Resource [%s] doesn't not exist" % rule.resource)
+            resources = ResourceManager.find(db, filter_params={
+                "metadata.name": rule.resource,
+                "metadata.resource_kind": rule.resource_kind,
+            })
+            if not resources:
+                message = f"Kind [{rule.resource_kind}] doesn't exists."
+                if rule.resource:
+                    message = f"Resource [{rule.resource}] of {message}"
+                raise ValidationError(message)
 
-                resource = resources[0]
-                if resource.metadata.resource_kind != rule.resource_kind:
-                    raise ValidationError("Resource [%s] of kind [%s] doesn't not exist" % (
-                        rule.resource, rule.resource_kind))
+            for resource_action in rule.resource_actions:
+                resource_kind = rule.resource_kind
+                resource = rule.resource
+
+                filter_params = {
+                    "metadata.name": resource_action,
+                    "metadata.resource_kind": resource_kind,
+                    "metadata.resource": resource
+                }
+
+                actions_on_resource = ResourceActionManager.find(
+                    db, filter_params=filter_params)
+
+                if not actions_on_resource:
+                    filter_params["metadata.resource"] = None
+                    actions_on_resource_kind = ResourceActionManager.find(
+                        db, filter_params=filter_params)
+                    if not actions_on_resource_kind:
+                        raise ValidationError(
+                            f"ResourceAction with [{filter_params}] constraint doesn't exist.")
 
     @classmethod
     def create(cls, db: Database, record: RoleCreate) -> Role:
