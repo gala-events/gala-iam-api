@@ -31,7 +31,6 @@ class GroupCreate(BaseRecordConfig):
 
 
 class Group(BaseRecord, GroupCreate):
-    metadata: GroupMetadata
     @property
     def model_name(self):
         return GROUP_MODEL_NAME
