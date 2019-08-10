@@ -13,14 +13,17 @@ from starlette.status import (HTTP_200_OK, HTTP_201_CREATED,
                               HTTP_500_INTERNAL_SERVER_ERROR)
 
 from db import CRUD, Database
-from models import ServiceAccount, ServiceAccountCreate, ServiceAccountManager, ServiceAccountPartial
+from models import (ServiceAccount, ServiceAccountCreate,
+                    ServiceAccountManager, ServiceAccountPartial)
+from models.service_account.service_account_model import \
+    ServiceAccountPostCreate
 from utils import get_db, json_merge_patch
 from utils.exceptions import RecordNotFoundException
 
 routes = APIRouter()
 
 
-@routes.post("/service_accounts", response_model=ServiceAccount)
+@routes.post("/service_accounts", response_model=ServiceAccountPostCreate)
 def create_service_account_api(service_account: ServiceAccountCreate, response: Response, db=Depends(get_db)):
     try:
         new_service_account = ServiceAccountManager.create(db, service_account)

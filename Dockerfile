@@ -1,7 +1,7 @@
-FROM python:3.7-alpine as base
+FROM python:3.7.4-slim-buster as base
 
 FROM base as builder
-RUN apk add gcc libc-dev make
+RUN apt-get update && apt-get install -y g++ make
 
 WORKDIR /install
 

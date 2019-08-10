@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Schema
 
 from models.base_record import BaseRecord, BaseRecordConfig
 from models.base_record_manager import BaseRecordManager
@@ -19,8 +19,17 @@ class ServiceAccountCreate(BaseRecordConfig):
     metadata: ServiceAccountMetadata
 
 
-class ServiceAccount(BaseRecord, ServiceAccountCreate):
+class ServiceAccountPostCreate(BaseRecord, ServiceAccountCreate):
+    client_id: str = Schema(..., readonly=True)
+    client_secret: str = Schema(..., readonly=True)
+    @property
+    def model_name(self):
+        return SERVICE_ACCOUNT_MODEL_NAME
+
+
+class ServiceAccount(BaseRecord):
     metadata: ServiceAccountMetadata
+    client_id: str = Schema(..., readonly=True)
     @property
     def model_name(self):
         return SERVICE_ACCOUNT_MODEL_NAME
