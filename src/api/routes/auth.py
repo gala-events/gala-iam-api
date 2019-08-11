@@ -109,8 +109,3 @@ async def generate_oauth2_token(form_data: OAuth2RequestForm = Depends(), db=Dep
         "expires_in": timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES).total_seconds()
     }
     return Token(**token_payload)
-
-
-# @routes.get("/subject/me", response_model=Subject)
-# async def read_users_me(current_subject: Subject = Depends(get_current_subject)):
-#     return current_subject
