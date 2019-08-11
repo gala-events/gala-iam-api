@@ -23,7 +23,7 @@ from utils.exceptions import RecordNotFoundException
 routes = APIRouter()
 
 
-@routes.post("/service_accounts", response_model=ServiceAccountPostCreate)
+@routes.post("/service_accounts", response_model=ServiceAccount)
 def create_service_account_api(service_account: ServiceAccountCreate, response: Response, db=Depends(get_db)):
     try:
         new_service_account = ServiceAccountManager.create(db, service_account)
@@ -34,7 +34,7 @@ def create_service_account_api(service_account: ServiceAccountCreate, response: 
         return JSONResponse({"error": "Failed to create service_account: %s" % exc.raw_errors})
 
 
-@routes.get("/service_accounts", response_model=List[ServiceAccount])
+@routes.get("/service_accounts", response_model=List[ServiceAccountPostCreate])
 def get_service_accounts_api(response: Response,
                              db=Depends(get_db),
                              skip: int = 0,
@@ -51,7 +51,7 @@ def get_service_accounts_api(response: Response,
         return JSONResponse(dict(error="Failed to get service_accounts. %s" % str(exc)))
 
 
-@routes.get("/service_accounts/{service_account_id}", response_model=ServiceAccount)
+@routes.get("/service_accounts/{service_account_id}", response_model=ServiceAccountPostCreate)
 def get_service_account_api(service_account_id: str, response: Response, db=Depends(get_db)):
     try:
         service_account = ServiceAccountManager.find_by_uuid(
@@ -62,7 +62,7 @@ def get_service_account_api(service_account_id: str, response: Response, db=Depe
         return JSONResponse(dict(error=str(exc)))
 
 
-@routes.put("/service_accounts/{service_account_id}", response_model=ServiceAccount)
+@routes.put("/service_accounts/{service_account_id}", response_model=ServiceAccountPostCreate)
 def update_service_account_api(service_account_id: str, service_account: ServiceAccountCreate, response: Response, db=Depends(get_db)):
     try:
         updated_service_account = ServiceAccountManager.update(
@@ -76,7 +76,7 @@ def update_service_account_api(service_account_id: str, service_account: Service
         return JSONResponse(dict(error="Failed to update %s service_account. %s" % (service_account_id, str(exc.raw_errors))))
 
 
-@routes.patch("/service_accounts/{service_account_id}", response_model=ServiceAccount)
+@routes.patch("/service_accounts/{service_account_id}", response_model=ServiceAccountPostCreate)
 def partial_update_service_account_api(service_account_id: str, service_account: ServiceAccountPartial, response: Response, db=Depends(get_db)):
     try:
         updated_service_account = ServiceAccountManager.partial_update(

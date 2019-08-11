@@ -19,20 +19,17 @@ class ServiceAccountCreate(BaseRecordConfig):
     metadata: ServiceAccountMetadata
 
 
-class ServiceAccountPostCreate(BaseRecord, ServiceAccountCreate):
-    client_id: str = Schema(..., readonly=True)
-    client_secret: str = Schema(..., readonly=True)
-    @property
-    def model_name(self):
-        return SERVICE_ACCOUNT_MODEL_NAME
-
-
 class ServiceAccount(BaseRecord):
     metadata: ServiceAccountMetadata
     client_id: str = Schema(..., readonly=True)
+
     @property
     def model_name(self):
         return SERVICE_ACCOUNT_MODEL_NAME
+
+
+class ServiceAccountPostCreate(ServiceAccount):
+    client_secret: str = Schema(..., readonly=True)
 
 
 class ServiceAccountPartial(BaseRecordConfig):

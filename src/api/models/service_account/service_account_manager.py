@@ -8,6 +8,7 @@ from models.base_record_manager import BaseRecordManager
 from models.service_account.service_account_model import (
     SERVICE_ACCOUNT_MODEL_NAME, ServiceAccount, ServiceAccountCreate,
     ServiceAccountPartial, ServiceAccountPostCreate)
+from utils.auth import get_hash
 
 
 class ServiceAccountManager(BaseRecordManager):
@@ -15,7 +16,6 @@ class ServiceAccountManager(BaseRecordManager):
 
     model = ServiceAccount
     model_name = SERVICE_ACCOUNT_MODEL_NAME
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     @classmethod
     def create(cls, db: Database, record: ServiceAccountCreate) -> ServiceAccount:
@@ -38,14 +38,14 @@ class ServiceAccountManager(BaseRecordManager):
 
         client_id = str(uuid4())
         client_secret = str(uuid4())
-        new_record = ServiceAccountPostCreate(
+        new_record = ServiceAccount(
             **record.dict(), client_id=client_id, client_secret=client_secret)
 
         record_to_create = new_record.copy(
-            update={"client_secret": cls.pwd_context.hash(new_record.client_secret)})
+            update={"client_secret": get_hash(new_record.client_secret)})
         record_to_create.save(db)
 
-        return record_to_create.dict(update={"client_secret": client_secret})
+        return record_to_create.copy(update={"client_secret": client_secret})
 
     @classmethod
     def update(cls, db: Database, record_uuid: str, record: ServiceAccountPartial) -> ServiceAccount:
